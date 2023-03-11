@@ -35,14 +35,10 @@ class MiniSom(object):
         """
         if sigma >= x/2.0 or sigma >= y/2.0:
             warn('Warning: sigma is too high for the dimension of the map.')
-        if random_seed:
-            self.random_generator = random.RandomState(random_seed)
-        else:
-            self.random_generator = random.RandomState(random_seed)
-        if decay_function:
-            self._decay_function = decay_function
-        else:
-            self._decay_function = lambda x, t, max_iter: x/(1+t/max_iter)
+        self.random_generator = random.RandomState(random_seed)
+        self._decay_function = decay_function or (
+            lambda x, t, max_iter: x / (1 + t / max_iter)
+        )
         self.learning_rate = learning_rate
         self.sigma = sigma
         self.weights = self.random_generator.rand(x,y,input_len)*2-1 # random initialization
@@ -169,9 +165,7 @@ class MiniSom(object):
             Returns the quantization error computed as the average distance between
             each input sample and its best matching unit.
         """
-        error = 0
-        for x in data:
-            error += fast_norm(x-self.weights[self.winner(x)])
+        error = sum(fast_norm(x-self.weights[self.winner(x)]) for x in data)
         return error/len(data)
 
     def win_map(self, data):
